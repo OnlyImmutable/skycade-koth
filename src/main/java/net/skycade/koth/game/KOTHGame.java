@@ -11,6 +11,7 @@ import net.skycade.koth.game.countdown.Countdown;
 import net.skycade.koth.utils.LocationUtil;
 import net.skycade.koth.utils.messages.MessageUtil;
 import net.skycade.koth.utils.placeholder.Placeholder;
+import net.skycade.koth.utils.placeholder.PlaceholderManager;
 import net.skycade.koth.utils.scoreboard.Scoreboard;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -73,7 +74,7 @@ public class KOTHGame implements Listener {
 
         currentlyWithinBoundaries = new LinkedList<>();
 
-        currentCaptureTime = (60 * 15);
+        currentCaptureTime = currentArena.getStartingDuration();
 
         setCurrentPhase(GamePhase.WAITING);
     }
@@ -100,7 +101,7 @@ public class KOTHGame implements Listener {
                                     new Placeholder("%arenaname%", currentArena.getArenaName())
                             ));
 
-                            plugin.getScoreboardManager().addScoreboard(new Scoreboard(player, "&b&lSky&f&lcade &3&lKOTH",
+                            plugin.getScoreboardManager().addScoreboard(new Scoreboard(player, "&b&lSky&f&lCade &3&lKOTH",
                                     new String[] {
                                             "",
                                             "&7Goodluck &b" + player.getName(),
@@ -112,9 +113,12 @@ public class KOTHGame implements Listener {
                                             "   ",
                                     }));
 
+                            int minutes = (currentCaptureTime % 3600) / 60;
+                            int seconds = currentCaptureTime % 60;
+
                             plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturing", ChatColor.GREEN.toString(), "&7Capturing: ", "&aNONE");
                             plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturingfac", ChatColor.DARK_PURPLE.toString(), "&7Faction: ", "&aNONE");
-                            plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Time Left: ", "&aLoading..");
+                            plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Time Left: ", "&c" + minutes + ":" + seconds);
                         }
                     });
                 }
@@ -146,20 +150,25 @@ public class KOTHGame implements Listener {
             if (intervals % 60 == 0) {
                 getActivePlayers().forEach(uuid -> {
                     Player player = Bukkit.getPlayer(uuid);
+                    // TODO message from db
                     MessageUtil.sendMessageToPlayer(player, (currentlyWithinBoundaries.peek() == null ? "No one" : Bukkit.getPlayer(currentlyWithinBoundaries.peek()).getName()) + " is capturing the zone.. " + (intervals / 60) + " minutes left..");
                 });
             }
         }, finished -> {
+
+            setCurrentPhase(GamePhase.FINISHED);
+
             Player winner = Bukkit.getPlayer(currentlyWithinBoundaries.peek());
             getActivePlayers().forEach(uuid -> {
                 Player player = Bukkit.getPlayer(uuid);
+                // TODO message from db
                 MessageUtil.sendMessageToPlayer(player, winner.getName() + " successfully captured the zone.. loot inbound..");
                 plugin.getScoreboardManager().getScoreboard(player).remove();
                 plugin.getScoreboardManager().removeScoreboard(player);
             });
 
-            // TODO make a KOTH key..
-            winner.getInventory().addItem(new ItemStack(Material.TRIPWIRE_HOOK));
+            getCurrentArena().getLootCommands().forEach(command -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), PlaceholderManager.replaceCustomPlaceholder(command, "%name%", winner.getName())));
+
             plugin.getGameManager().endGame(this);
         });
     }

@@ -7,6 +7,7 @@ import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**************************************************************************************************
@@ -59,15 +60,15 @@ public class ArenaManager {
         FileConfiguration config = arenaConfig.getFileConfiguration();
 
         for (String arenaName : config.getConfigurationSection("arenas").getKeys(false)) {
+            int startingDuration = config.getInt("arenas." + arenaName + ".startDuration");
             Location spawnPoint = LocationUtil.getLocationFromString(config.getString("arenas." + arenaName + ".spawnLocation"));
             Location boundaryPoint1 = LocationUtil.getLocationFromString(config.getString("arenas." + arenaName + ".boundaries.point1"));
             Location boundaryPoint2 = LocationUtil.getLocationFromString(config.getString("arenas." + arenaName + ".boundaries.point2"));
 
-            arenaCache.put(arenaName, new Arena(arenaName, spawnPoint, boundaryPoint1, boundaryPoint2));
+            List<String> lootCommands = config.getStringList("arenas." + arenaName + ".lootCommands");
+
+            arenaCache.put(arenaName, new Arena(arenaName, startingDuration, spawnPoint, boundaryPoint1, boundaryPoint2, lootCommands));
             System.out.println("Cached a new arena.. " + arenaName);
-            System.out.println("Spawn point: " + spawnPoint.toVector());
-            System.out.println("Bound point 1: " + boundaryPoint1.toVector());
-            System.out.println("Bound point 2: " + boundaryPoint2.toVector());
         }
     }
 

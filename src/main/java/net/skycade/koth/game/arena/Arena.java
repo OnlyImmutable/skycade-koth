@@ -2,6 +2,8 @@ package net.skycade.koth.game.arena;
 
 import org.bukkit.Location;
 
+import java.util.List;
+
 /**************************************************************************************************
  *     Copyright 2018 Jake Brown                                                                  *
  *                                                                                                *
@@ -22,6 +24,9 @@ public class Arena {
     /** Name for the arena. */
     private String arenaName;
 
+    /** The duration the game will start at, for example 900 = 900 seconds = 15 minutes. */
+    private int startingDuration;
+
     /** Spawn point everyone is transported to. */
     private Location spawnLocation;
 
@@ -29,11 +34,16 @@ public class Arena {
     private Location arenaBoundaryPoint1;
     private Location arenaBoundaryPoint2;
 
-    public Arena(String arenaName, Location spawnLocation, Location arenaBoundaryPoint1, Location arenaBoundaryPoint2) {
+    /** The commands executed when a player wins.. */
+    private List<String> lootCommands;
+
+    public Arena(String arenaName, int startingDuration, Location spawnLocation, Location arenaBoundaryPoint1, Location arenaBoundaryPoint2, List<String> lootCommands) {
         this.arenaName = arenaName;
+        this.startingDuration = startingDuration;
         this.spawnLocation = spawnLocation;
         this.arenaBoundaryPoint1 = arenaBoundaryPoint1;
         this.arenaBoundaryPoint2 = arenaBoundaryPoint2;
+        this.lootCommands = lootCommands;
     }
 
     /**
@@ -41,6 +51,13 @@ public class Arena {
      */
     public String getArenaName() {
         return arenaName;
+    }
+
+    /**
+     * @return Get starting duration.
+     */
+    public int getStartingDuration() {
+        return startingDuration;
     }
 
     /**
@@ -62,5 +79,12 @@ public class Arena {
      */
     public Location getArenaBoundaryPoint2() {
         return arenaBoundaryPoint2;
+    }
+
+    /**
+     * @return Get all the commands executed at the end of a game.
+     */
+    public List<String> getLootCommands() {
+        return lootCommands;
     }
 }

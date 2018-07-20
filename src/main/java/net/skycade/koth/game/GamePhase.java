@@ -21,7 +21,6 @@ public enum GamePhase {
     WAITING,
     COUNTDOWN,
     IN_PROGRESS,
-    LOOT_COLLECTION,
     FINISHED
     ;
 }

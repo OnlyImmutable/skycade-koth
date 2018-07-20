@@ -1,12 +1,7 @@
 package net.skycade.koth.game;
 
 import net.skycade.koth.SkycadeKoth;
-import net.skycade.koth.game.arena.Arena;
-import net.skycade.koth.game.countdown.Countdown;
-import net.skycade.koth.utils.messages.MessageUtil;
-import net.skycade.koth.utils.placeholder.Placeholder;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 
 import java.util.*;
@@ -61,6 +56,7 @@ public class GameManager {
             game.getActivePlayers().clear();
         }
 
+        activeKOTHGames.remove(game.getGameId());
         HandlerList.unregisterAll(game);
     }
 
