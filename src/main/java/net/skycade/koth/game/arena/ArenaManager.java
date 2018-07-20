@@ -27,29 +27,18 @@ import java.util.Map;
  **************************************************************************************************/
 public class ArenaManager {
 
-    private SkycadeKoth plugin;
+    /** Configuration instance for arenas. */
     private SkycadeFlatfileDatabase arenaConfig;
 
+    /** Arena cache. */
     private Map<String, Arena> arenaCache;
 
     public ArenaManager(SkycadeKoth plugin) {
-        this.plugin = plugin;
 
         arenaCache = new HashMap<>();
         arenaConfig = new SkycadeFlatfileDatabase(plugin, "arenas.yml");
 
         loadArenas();
-    }
-
-    /**
-     * Save an arena to the configuration file to be loaded..
-     * @param arena - arena.
-     */
-    public void createNewArena(Arena arena) {
-        arenaConfig.getFileConfiguration().set("arenas." + arena.getArenaName() + ".spawnLocation", LocationUtil.getStringFromLocation(arena.getSpawnLocation()));
-        arenaConfig.getFileConfiguration().set("arenas." + arena.getArenaName() + ".boundaries.point1", LocationUtil.getStringFromLocation(arena.getArenaBoundaryPoint1()));
-        arenaConfig.getFileConfiguration().set("arenas." + arena.getArenaName() + ".boundaries.point2", LocationUtil.getStringFromLocation(arena.getArenaBoundaryPoint2()));
-        arenaConfig.saveConfig();
     }
 
     /**

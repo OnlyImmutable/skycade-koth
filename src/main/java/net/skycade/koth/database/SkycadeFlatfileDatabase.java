@@ -24,15 +24,25 @@ import java.io.IOException;
  **************************************************************************************************/
 public class SkycadeFlatfileDatabase {
 
+    /** Config file instance. */
     private File file;
+    /** {@link FileConfiguration} instance. */
     private FileConfiguration fileConfiguration;
 
+    /**
+     * Create a new instance of a flatfile database.
+     * @param plugin - plugin instance.
+     * @param fileName - File name.
+     */
     public SkycadeFlatfileDatabase(SkycadeKoth plugin, String fileName) {
         plugin.saveResource(fileName, false);
         this.file = new File(plugin.getDataFolder(), fileName);
         this.fileConfiguration = YamlConfiguration.loadConfiguration(file);
     }
 
+    /**
+     * Save the config.
+     */
     public void saveConfig() {
 
         try {
@@ -42,10 +52,18 @@ public class SkycadeFlatfileDatabase {
         }
     }
 
+    /**
+     * Get the file instance.
+     * @return File
+     */
     public File getFile() {
         return file;
     }
 
+    /**
+     * Get the configuration instance.
+     * @return
+     */
     public FileConfiguration getFileConfiguration() {
         return fileConfiguration;
     }

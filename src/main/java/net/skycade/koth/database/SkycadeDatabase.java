@@ -25,7 +25,9 @@ import java.sql.SQLException;
  **************************************************************************************************/
 public class SkycadeDatabase {
 
+    /** Hikari instance for sql connections. */
     private HikariDataSource connectionPool;
+    /** Hikari credentials and connection info. */
     private final String host, database, user, password;
     private final int port;
 

@@ -21,18 +21,31 @@ import org.bukkit.entity.Player;
  **************************************************************************************************/
 public class ExitCaptureZoneEvent extends SkycadeEvent {
 
+    /** Player exiting zone. */
     private Player player;
+    /** Game the zone is in. */
     private KOTHGame game;
 
+    /**
+     * Create a new instance of the {@link ExitCaptureZoneEvent}
+     * @param player - player.
+     * @param game - game.
+     */
     public ExitCaptureZoneEvent(Player player, KOTHGame game) {
         this.player = player;
         this.game = game;
     }
 
+    /**
+     * @return Get the player exiting the zone.
+     */
     public Player getPlayer() {
         return player;
     }
 
+    /**
+     * @return Get the game the zone is in.
+     */
     public KOTHGame getGame() {
         return game;
     }

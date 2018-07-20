@@ -37,6 +37,15 @@ public class Arena {
     /** The commands executed when a player wins.. */
     private List<String> lootCommands;
 
+    /**
+     * Create a new instance of an Arena.
+     * @param arenaName - arena name.
+     * @param startingDuration - starting duration for the arena being played.
+     * @param spawnLocation - spawn location for players.
+     * @param arenaBoundaryPoint1 - boundary point 1 for the zone.
+     * @param arenaBoundaryPoint2 - boundary point 2 for the zone.
+     * @param lootCommands - list of commands executed when looting started.
+     */
     public Arena(String arenaName, int startingDuration, Location spawnLocation, Location arenaBoundaryPoint1, Location arenaBoundaryPoint2, List<String> lootCommands) {
         this.arenaName = arenaName;
         this.startingDuration = startingDuration;

@@ -45,6 +45,7 @@ import java.util.*;
  **************************************************************************************************/
 public class KOTHGame implements Listener {
 
+    /** Instance for {@link SkycadeKoth} plugin. */
     private SkycadeKoth plugin;
 
     /** ID for the game.. typically a name. */
@@ -65,6 +66,12 @@ public class KOTHGame implements Listener {
     /** Current duration for capturing at the current time. */
     private int currentCaptureTime;
 
+    /**
+     * Create a new instance of {@link KOTHGame}
+     * @param plugin - plugin instance/
+     * @param gameId - ID for the specific game.
+     * @param currentArena - Current arena for this specific {@link KOTHGame}
+     */
     public KOTHGame(SkycadeKoth plugin, String gameId, Arena currentArena) {
         this.plugin = plugin;
         this.gameId = gameId;
@@ -79,6 +86,9 @@ public class KOTHGame implements Listener {
         setCurrentPhase(GamePhase.WAITING);
     }
 
+    /**
+     * Start the countdown for the actual game.
+     */
     public void startCountdown() {
 
         setCurrentPhase(GamePhase.COUNTDOWN);
@@ -125,7 +135,10 @@ public class KOTHGame implements Listener {
         );
     }
 
-    private void resetCountdown() {
+    /**
+     * Reset the capturing zone countdown (allows for resetting each time a player leaves the zone).
+     */
+    private void resetZoneCountdown() {
 
         if (plugin.getCountdownManager().getCountdown("capture_" + gameId) != null) {
             Countdown countdown = plugin.getCountdownManager().getCountdown("capture_" + gameId);
@@ -147,11 +160,14 @@ public class KOTHGame implements Listener {
                 plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Time Left: ", "&c" + minutes + ":" + seconds);
             });
 
-            if (intervals % 60 == 0) {
+            if (intervals > 60 && intervals % 60 == 0) {
                 getActivePlayers().forEach(uuid -> {
                     Player player = Bukkit.getPlayer(uuid);
-                    // TODO message from db
-                    MessageUtil.sendMessageToPlayer(player, (currentlyWithinBoundaries.peek() == null ? "No one" : Bukkit.getPlayer(currentlyWithinBoundaries.peek()).getName()) + " is capturing the zone.. " + (intervals / 60) + " minutes left..");
+
+                    MessageUtil.sendMessage(player, "currentlycapturing", Arrays.asList(
+                            new Placeholder("%capturing%", (currentlyWithinBoundaries.peek() == null ? "No one" : Bukkit.getPlayer(currentlyWithinBoundaries.peek()).getName())),
+                            new Placeholder("%minutes%", (intervals / 60))
+                    ));
                 });
             }
         }, finished -> {
@@ -161,8 +177,12 @@ public class KOTHGame implements Listener {
             Player winner = Bukkit.getPlayer(currentlyWithinBoundaries.peek());
             getActivePlayers().forEach(uuid -> {
                 Player player = Bukkit.getPlayer(uuid);
-                // TODO message from db
-                MessageUtil.sendMessageToPlayer(player, winner.getName() + " successfully captured the zone.. loot inbound..");
+
+                MessageUtil.sendMessage(player, "capturedzone", Arrays.asList(
+                        new Placeholder("%winner%", winner.getName()),
+                        new Placeholder("%faction%", (MPlayer.get(winner.getUniqueId()).getFactionName().length() < 1 ? "None" : MPlayer.get(winner.getUniqueId()).getFactionName()))
+                ));
+
                 plugin.getScoreboardManager().getScoreboard(player).remove();
                 plugin.getScoreboardManager().removeScoreboard(player);
             });
@@ -173,36 +193,68 @@ public class KOTHGame implements Listener {
         });
     }
 
+    /**
+     * Get the games id.
+     * @return GameID
+     */
     public String getGameId() {
         return gameId;
     }
 
+    /**
+     * Get the current phase of the game.
+     * @return Current phase
+     */
     public GamePhase getCurrentPhase() {
         return currentPhase;
     }
 
+    /**
+     * Add a player to the {@link KOTHGame}
+     * @param player - player
+     */
     public void addActivePlayer(Player player) {
         if (activePlayers.contains(player.getUniqueId())) return;
         activePlayers.add(player.getUniqueId());
     }
 
+    /**
+     * Remove a player from the KOTH game.
+     * @param player - player
+     */
     public void removeActivePlayer(Player player) {
         activePlayers.remove(player.getUniqueId());
     }
 
+    /**
+     * Get the players participating in the {@link KOTHGame}
+     * @return Active players.
+     */
     public List<UUID> getActivePlayers() {
         return activePlayers;
     }
 
+    /**
+     * Get the arena used in the {@link KOTHGame}
+     * @return Arena
+     */
     public Arena getCurrentArena() {
         return currentArena;
     }
 
+    /**
+     * Set the current phase of the game.
+     * @param newPhease - next phase.
+     */
     public void setCurrentPhase(GamePhase newPhease) {
         Bukkit.getPluginManager().callEvent(new PhaseChangeEvent(this, currentPhase, newPhease));
         currentPhase = newPhease;
     }
 
+    /**
+     * If a player moves into or out of a capture zone.
+     * @param event - event
+     */
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
 
@@ -211,21 +263,13 @@ public class KOTHGame implements Listener {
         Location from = event.getFrom();
         Location to = event.getTo();
 
-        // Stops checking for players not in this game..
-        if (!getActivePlayers().contains(player.getUniqueId())) return;
-
-        // Stops on the block checking..
-        if (from == to) return;
-
-        if (getCurrentPhase() != GamePhase.IN_PROGRESS) return;
-
-        if (!LocationUtil.isWithinLocation(to, getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2()) && LocationUtil.isWithinLocation(from, getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2())) {
-            Bukkit.getPluginManager().callEvent(new ExitCaptureZoneEvent(player, this));
-        } else if (!LocationUtil.isWithinLocation(from, getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2()) && LocationUtil.isWithinLocation(to, getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2())) {
-            Bukkit.getPluginManager().callEvent(new EnterCaptureZoneEvent(player, this));
-        }
+        handleZoneCheck(player, from, to);
     }
 
+    /**
+     * When a player teleports into or out of a capture zone.
+     * @param event - event
+     */
     @EventHandler
     public void onTeleport(PlayerTeleportEvent event) {
 
@@ -234,21 +278,13 @@ public class KOTHGame implements Listener {
         Location from = event.getFrom();
         Location to = event.getTo();
 
-        // Stops checking for players not in this game..
-        if (!getActivePlayers().contains(player.getUniqueId())) return;
-
-        // Stops on the block checking..
-        if (from == to) return;
-
-        if (getCurrentPhase() != GamePhase.IN_PROGRESS) return;
-
-        if (!LocationUtil.isWithinLocation(to, getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2()) && LocationUtil.isWithinLocation(from, getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2())) {
-            Bukkit.getPluginManager().callEvent(new ExitCaptureZoneEvent(player, this));
-        } else if (!LocationUtil.isWithinLocation(from, getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2()) && LocationUtil.isWithinLocation(to, getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2())) {
-            Bukkit.getPluginManager().callEvent(new EnterCaptureZoneEvent(player, this));
-        }
+        handleZoneCheck(player, from, to);
     }
 
+    /**
+     * Handles when a player enters the capture zone.
+     * @param event - event
+     */
     @EventHandler
     public void onEnterCapture(EnterCaptureZoneEvent event) {
 
@@ -257,21 +293,34 @@ public class KOTHGame implements Listener {
         if (!currentlyWithinBoundaries.contains(player.getUniqueId())) {
 
             if (currentlyWithinBoundaries.peek() == null) {
-                resetCountdown();
+                resetZoneCountdown();
             }
 
             currentlyWithinBoundaries.add(player.getUniqueId());
+            MessageUtil.sendMessage(player, "enterzone");
         }
     }
 
+    /**
+     * Handles when a player exists the capture zone.
+     * @param event - event
+     */
     @EventHandler
     public void onExitCapture(ExitCaptureZoneEvent event) {
         Player player = event.getPlayer();
 
+        MessageUtil.sendMessage(player, "exitzone");
+
         if (currentlyWithinBoundaries.size() > 1 && currentlyWithinBoundaries.peek() != null && currentlyWithinBoundaries.peek().equals(player.getUniqueId())) {
             currentlyWithinBoundaries.poll();
-            Bukkit.broadcastMessage("There is now a new person collecting points.. " + Bukkit.getPlayer(currentlyWithinBoundaries.peek()).getName());
-            resetCountdown();
+            getActivePlayers().forEach(uuid -> {
+                Player active = Bukkit.getPlayer(uuid);
+                MessageUtil.sendMessage(active, "capturechanged", Collections.singletonList(
+                        new Placeholder("%capturing%", Bukkit.getPlayer(currentlyWithinBoundaries.peek()).getName())
+                ));
+            });
+
+            resetZoneCountdown();
             return;
         }
 
@@ -293,19 +342,89 @@ public class KOTHGame implements Listener {
         }
     }
 
+    /**
+     * Handles the changing of phases.
+     * @param event - event
+     */
     @EventHandler
     public void onPhaseChange(PhaseChangeEvent event) {
-        Bukkit.broadcastMessage("New phase: " + event.getNewPhase().name());
 
-        if (event.getNewPhase() == GamePhase.IN_PROGRESS) {
-            // Decrease time over time (shorter as time goes on..)
+        switch (event.getNewPhase()) {
+            case IN_PROGRESS:
+                // Decrease time over time (shorter as time goes on..)
+                break;
         }
     }
 
+    /**
+     * Handles when a player establishes a secure connection to the server.
+     * @param event - event
+     */
+    @EventHandler
+    public void onConnect(PlayerJoinEvent event) {
+
+        Player player = event.getPlayer();
+
+        if (plugin.getScoreboardManager().getScoreboard(player) != null) {
+            plugin.getScoreboardManager().getScoreboard(player).remove();
+            plugin.getScoreboardManager().removeScoreboard(player);
+        }
+
+        // Stops checking for players not in this game..
+        if (!getActivePlayers().contains(player.getUniqueId())) return;
+
+        if (getCurrentPhase() != GamePhase.IN_PROGRESS) return;
+
+        if (LocationUtil.isWithinLocation(player.getLocation(), getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2())) {
+            Bukkit.getPluginManager().callEvent(new EnterCaptureZoneEvent(player, this));
+        }
+    }
+
+    /**
+     * Handles the disconnection of players to remove scoreboards,
+     * Handle leaving the zone etc.
+     * @param event - event
+     */
     @EventHandler
     public void onDisconnect(PlayerQuitEvent event) {
+
         Player player = event.getPlayer();
-        plugin.getScoreboardManager().getScoreboard(player).remove();
-        plugin.getScoreboardManager().removeScoreboard(player);
+
+        if (plugin.getScoreboardManager().getScoreboard(player) != null) {
+            plugin.getScoreboardManager().getScoreboard(player).remove();
+            plugin.getScoreboardManager().removeScoreboard(player);
+        }
+
+        // Stops checking for players not in this game..
+        if (!getActivePlayers().contains(player.getUniqueId())) return;
+
+        if (getCurrentPhase() != GamePhase.IN_PROGRESS) return;
+
+        if (LocationUtil.isWithinLocation(player.getLocation(), getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2())) {
+            Bukkit.getPluginManager().callEvent(new ExitCaptureZoneEvent(player, this));
+        }
+    }
+
+    /**
+     * Handles the checks for if a player enters or leaves the capture zone.
+     * Made into a method due to the same code being used more than once.
+     * @param player - player checking.
+     * @param from - previous location.
+     * @param to - current location.
+     */
+    private void handleZoneCheck(Player player, Location from, Location to) {
+        // Stops checking for players not in this game..
+        if (!getActivePlayers().contains(player.getUniqueId())) return;
+
+        // Stops on the block checking..
+        if (from == to) return;
+
+        if (getCurrentPhase() != GamePhase.IN_PROGRESS) return;
+
+        if (!LocationUtil.isWithinLocation(to, getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2()) && LocationUtil.isWithinLocation(from, getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2())) {
+            Bukkit.getPluginManager().callEvent(new ExitCaptureZoneEvent(player, this));
+        } else if (!LocationUtil.isWithinLocation(from, getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2()) && LocationUtil.isWithinLocation(to, getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2())) {
+            Bukkit.getPluginManager().callEvent(new EnterCaptureZoneEvent(player, this));
+        }
     }
 }

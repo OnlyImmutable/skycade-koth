@@ -21,8 +21,10 @@ import org.bukkit.scheduler.BukkitRunnable;
  **************************************************************************************************/
 public class Countdown {
 
+    /** {@link SkycadeKoth} plugin instance. */
     private SkycadeKoth plugin;
 
+    /** ID for the countdown. */
     private String countdownId;
 
     private int currentTime;

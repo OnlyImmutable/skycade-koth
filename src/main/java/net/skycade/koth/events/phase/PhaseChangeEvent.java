@@ -21,24 +21,42 @@ import net.skycade.koth.game.KOTHGame;
  **************************************************************************************************/
 public class PhaseChangeEvent extends SkycadeEvent {
 
+    /** The current game the phase is changing in. */
     private KOTHGame currentGame;
+    /** The last phase before changing. */
     private GamePhase previousPhase;
+    /** The current phase after changing. */
     private GamePhase newPhase;
 
+    /**
+     * Create a new instance of {@link PhaseChangeEvent}
+     * @param currentGame - current game.
+     * @param previousPhase - last phase.
+     * @param newPhase - new phase.
+     */
     public PhaseChangeEvent(KOTHGame currentGame, GamePhase previousPhase, GamePhase newPhase) {
         this.currentGame = currentGame;
         this.previousPhase = previousPhase;
         this.newPhase = newPhase;
     }
 
+    /**
+     * @return Get the current game.
+     */
     public KOTHGame getCurrentGame() {
         return currentGame;
     }
 
+    /**
+     * @return Get the previous state.
+     */
     public GamePhase getPreviousPhase() {
         return previousPhase;
     }
 
+    /**
+     * @return Get the next state.
+     */
     public GamePhase getNewPhase() {
         return newPhase;
     }
