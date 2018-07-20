@@ -1,8 +1,14 @@
-package net.skycade.koth.events.zone;
+package net.skycade.koth.utils.scoreboard;
 
-import net.skycade.koth.events.SkycadeEvent;
-import net.skycade.koth.game.KOTHGame;
+import net.skycade.koth.SkycadeKoth;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**************************************************************************************************
  *     Copyright 2018 Jake Brown                                                                  *
@@ -19,21 +25,39 @@ import org.bukkit.entity.Player;
  *     See the License for the specific language governing permissions and                        *
  *     limitations under the License.                                                             *
  **************************************************************************************************/
-public class EnterCaptureZoneEvent extends SkycadeEvent {
+public class ScoreboardManager {
 
-    private Player player;
-    private KOTHGame game;
+    private Map<UUID, Scoreboard> scoreboards;
 
-    public EnterCaptureZoneEvent(Player player, KOTHGame game) {
-        this.player = player;
-        this.game = game;
+    private BukkitRunnable updateRunnable;
+
+    public ScoreboardManager(SkycadeKoth plugin) {
+        scoreboards = new HashMap<>();
+
+        updateRunnable = new BukkitRunnable() {
+
+            @Override
+            public void run() {
+                scoreboards.forEach((key, value) -> {
+                    value.update();
+                });
+            }
+        };
+
+        updateRunnable.runTaskTimerAsynchronously(plugin, 0L, 20L);
     }
 
-    public Player getPlayer() {
-        return player;
+    public void addScoreboard(Scoreboard scoreboard) {
+        if (scoreboards.containsKey(scoreboard.getPlayer().getUniqueId())) {
+            return;
+        }
+
+        scoreboards.put(scoreboard.getPlayer().getUniqueId(), scoreboard);
     }
 
-    public KOTHGame getGame() {
-        return game;
+    public Scoreboard getScoreboard(Player player) { return scoreboards.get(player.getUniqueId()); }
+
+    public Map<UUID, Scoreboard> getScoreboards() {
+        return scoreboards;
     }
 }

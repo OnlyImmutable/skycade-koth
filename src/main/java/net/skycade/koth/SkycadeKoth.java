@@ -8,6 +8,7 @@ import net.skycade.koth.database.SkycadeFlatfileDatabase;
 import net.skycade.koth.game.GameManager;
 import net.skycade.koth.utils.messages.MessageManager;
 import net.skycade.koth.utils.messages.MessageUtil;
+import net.skycade.koth.utils.scoreboard.ScoreboardManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**************************************************************************************************
@@ -36,6 +37,7 @@ public class SkycadeKoth extends JavaPlugin {
     /** Instances */
     private GameManager gameManager;
     private ArenaManager arenaManager;
+    private ScoreboardManager scoreboardManager;
     private CountdownManager countdownManager;
     private MessageManager messageManager;
 
@@ -52,7 +54,8 @@ public class SkycadeKoth extends JavaPlugin {
         // Creation of instances..
         gameManager = new GameManager(this);
         arenaManager = new ArenaManager(this);
-        countdownManager = new CountdownManager(this);
+        scoreboardManager = new ScoreboardManager(this);
+        countdownManager = new CountdownManager();
         messageManager = new MessageManager(this);
 
         new MessageUtil(this);
@@ -91,7 +94,15 @@ public class SkycadeKoth extends JavaPlugin {
     }
 
     /**
-     * Countdown handler instance.
+     * {@link ScoreboardManager} instance.
+     * @return ScoreboardManager
+     */
+    public ScoreboardManager getScoreboardManager() {
+        return scoreboardManager;
+    }
+
+    /**
+     * {@link CountdownManager} instance.
      * @return CountdownManager
      */
     public CountdownManager getCountdownManager() {
@@ -99,7 +110,7 @@ public class SkycadeKoth extends JavaPlugin {
     }
 
     /**
-     * Message handler instance.
+     * {@link MessageManager} instance.
      * @return MessageManager
      */
     public MessageManager getMessageManager() {

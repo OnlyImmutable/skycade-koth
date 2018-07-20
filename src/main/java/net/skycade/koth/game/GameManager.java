@@ -7,6 +7,7 @@ import net.skycade.koth.utils.messages.MessageUtil;
 import net.skycade.koth.utils.placeholder.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 
 import java.util.*;
 
@@ -47,13 +48,20 @@ public class GameManager {
         }
 
         game.startCountdown();
+        Bukkit.getPluginManager().registerEvents(game, plugin);
     }
 
     /**
      * End a game of KOTH.
      */
     public void endGame(KOTHGame game) {
+        // TODO make 'world' configurable
+        if (activeKOTHGames.containsKey(game.getGameId())) {
+            game.getActivePlayers().forEach(uuid -> Bukkit.getPlayer(uuid).teleport(Bukkit.getWorld("world").getSpawnLocation()));
+            game.getActivePlayers().clear();
+        }
 
+        HandlerList.unregisterAll(game);
     }
 
     public KOTHGame getGameById(String gameId) {

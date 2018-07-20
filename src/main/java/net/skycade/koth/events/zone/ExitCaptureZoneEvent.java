@@ -1,6 +1,7 @@
 package net.skycade.koth.events.zone;
 
 import net.skycade.koth.events.SkycadeEvent;
+import net.skycade.koth.game.KOTHGame;
 import org.bukkit.entity.Player;
 
 /**************************************************************************************************
@@ -21,12 +22,18 @@ import org.bukkit.entity.Player;
 public class ExitCaptureZoneEvent extends SkycadeEvent {
 
     private Player player;
+    private KOTHGame game;
 
-    public ExitCaptureZoneEvent(Player player) {
+    public ExitCaptureZoneEvent(Player player, KOTHGame game) {
         this.player = player;
+        this.game = game;
     }
 
     public Player getPlayer() {
         return player;
+    }
+
+    public KOTHGame getGame() {
+        return game;
     }
 }

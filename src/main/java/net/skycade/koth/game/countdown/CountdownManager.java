@@ -2,7 +2,9 @@ package net.skycade.koth.game.countdown;
 
 import net.skycade.koth.SkycadeKoth;
 import net.skycade.koth.utils.Callback;
-import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**************************************************************************************************
  *     Copyright 2018 Jake Brown                                                                  *
@@ -21,63 +23,26 @@ import org.bukkit.scheduler.BukkitRunnable;
  **************************************************************************************************/
 public class CountdownManager {
 
-    private SkycadeKoth plugin;
+    private Map<String, Countdown> currentCountdowns;
 
-    private Countdown currentCountdown;
-    private BukkitRunnable runnable;
-
-    public CountdownManager(SkycadeKoth plugin) {
-        this.plugin = plugin;
+    public CountdownManager() {
+        this.currentCountdowns = new HashMap<>();
     }
 
-    /**
-     *
-     * @param countdown - the countdown instance.
-     * @param intervals - what happens for every interval you specified in countdown.
-     * @param finished - what happens once the countdown finishes.
-     */
     public void startCountdown(Countdown countdown, Callback<Integer> intervals, Callback<Boolean> finished) {
-
-        if (currentCountdown != null) {
-            stopCountdown();
-        }
-
-        currentCountdown = countdown;
-
-        runnable = new BukkitRunnable() {
-
-            @Override
-            public void run() {
-
-                if (currentCountdown.getCurrentTime() < 1) {
-                    finished.call(false);
-                    stopCountdown();
-                    return;
-                }
-
-                for (int interval : countdown.getCountdownPoints()) {
-                    if (currentCountdown.getCurrentTime() == interval) {
-                        intervals.call(interval);
-                    }
-                }
-
-                currentCountdown.setCurrentTime(currentCountdown.getCurrentTime() - 1);
-            }
-        };
-
-        runnable.runTaskTimer(plugin, 0L, 20L);
-    }
-
-    /**
-     * Stop the countdown.
-     */
-    public void stopCountdown() {
-
-        if (currentCountdown == null) {
+        if (currentCountdowns.containsKey(countdown.getCountdownId())) {
             return;
         }
 
-        runnable.cancel();
-        currentCountdown = null;
+        countdown.start(intervals, finished);
+        currentCountdowns.put(countdown.getCountdownId(), countdown);
+    }
+
+    public void removeCountdown(String countdownId) {
+        currentCountdowns.remove(countdownId);
+    }
+
+    public Countdown getCountdown(String countdownId) {
+        return currentCountdowns.get(countdownId);
     }
 }

@@ -2,6 +2,7 @@ package net.skycade.koth.events.phase;
 
 import net.skycade.koth.events.SkycadeEvent;
 import net.skycade.koth.game.GamePhase;
+import net.skycade.koth.game.KOTHGame;
 
 /**************************************************************************************************
  *     Copyright 2018 Jake Brown                                                                  *
@@ -20,12 +21,18 @@ import net.skycade.koth.game.GamePhase;
  **************************************************************************************************/
 public class PhaseChangeEvent extends SkycadeEvent {
 
+    private KOTHGame currentGame;
     private GamePhase previousPhase;
     private GamePhase newPhase;
 
-    public PhaseChangeEvent(GamePhase previousPhase, GamePhase newPhase) {
+    public PhaseChangeEvent(KOTHGame currentGame, GamePhase previousPhase, GamePhase newPhase) {
+        this.currentGame = currentGame;
         this.previousPhase = previousPhase;
         this.newPhase = newPhase;
+    }
+
+    public KOTHGame getCurrentGame() {
+        return currentGame;
     }
 
     public GamePhase getPreviousPhase() {
