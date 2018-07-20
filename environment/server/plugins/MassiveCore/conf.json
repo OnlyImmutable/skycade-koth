@@ -1,0 +1,10 @@
+{
+  "localPollingEnabled": true,
+  "serverid": "d0ee9b81-a85e-4d24-b744-943ba7b1675a",
+  "dburi": "default",
+  "alias2uri": {
+    "default": "flatfile",
+    "flatfile": "flatfile://mstore",
+    "mongodb": "mongodb://localhost:27017/mstore"
+  }
+}

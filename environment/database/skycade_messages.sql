@@ -1,0 +1,14 @@
+INSERT INTO skycade.messages (messageKey, messageValue) VALUES ('alreadyingame', '&7Sorry, you''re already in a game.. please use &b/koth leave &7first.');
+INSERT INTO skycade.messages (messageKey, messageValue) VALUES ('capturechanged', '&7There is a new player capturing the zone! &b%capturing%&7.');
+INSERT INTO skycade.messages (messageKey, messageValue) VALUES ('capturedzone', '&b%winner% &7from &b''%faction%'' &7successfully captured the zone, they received loot.');
+INSERT INTO skycade.messages (messageKey, messageValue) VALUES ('capturetimedecrease', '&7The time to capture the zone has decreased to &b%minutes% &7minutes.');
+INSERT INTO skycade.messages (messageKey, messageValue) VALUES ('countdown', '&7KOTH is starting in &d%seconds% &7seconds.');
+INSERT INTO skycade.messages (messageKey, messageValue) VALUES ('currentlycapturing', '&7%capturing% is capturing the zone.. there are %minutes% more minutes left.');
+INSERT INTO skycade.messages (messageKey, messageValue) VALUES ('enterzone', '&7You have entered the capture zone.');
+INSERT INTO skycade.messages (messageKey, messageValue) VALUES ('exitzone', '&7You have exited the capture zone!');
+INSERT INTO skycade.messages (messageKey, messageValue) VALUES ('gamestarted', '&7The KOTH game has started! ID: %gamename%');
+INSERT INTO skycade.messages (messageKey, messageValue) VALUES ('joingame', '&7You have joined a new KOTH game.. %gamename%. Arena: %arenaname%');
+INSERT INTO skycade.messages (messageKey, messageValue) VALUES ('joinnewgame', '&b&lNew KOTH game starting in 60 seconds.. /koth join %gamename% to join.. current map: %arenaname%');
+INSERT INTO skycade.messages (messageKey, messageValue) VALUES ('leavegame', '&7You left the KOTH game.. %gamename%');
+INSERT INTO skycade.messages (messageKey, messageValue) VALUES ('noPermission', '&cYou do not have the correct permissions to use this command.');
+INSERT INTO skycade.messages (messageKey, messageValue) VALUES ('prefix', '&d[KOTH]');

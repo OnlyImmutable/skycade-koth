@@ -1,0 +1,22 @@
+lastAccountName: ThatAbstractWolf
+timestamps:
+  login: 1527617747122
+  logout: 1527518125054
+  lastteleport: 1527519081992
+ipAddress: 127.0.0.1
+afk: false
+logoutlocation:
+  world: ASkyBlock
+  x: -0.08823246732722427
+  y: 120.0
+  z: -3.4892426277997464
+  yaw: 291.14978
+  pitch: 10.799996
+money: '100.0'
+lastlocation:
+  world: ASkyBlock
+  x: -1.143268916449125
+  y: 118.0
+  z: -0.9561413660891813
+  yaw: 232.94994
+  pitch: 26.549992
