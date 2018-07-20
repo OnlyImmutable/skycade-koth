@@ -11,6 +11,7 @@ arenas:
             point2: 'ASkyBlock;-31;255;40;0;0'
         # Commands that are ran when the player wins.. %name% = players name placeholder.
         lootCommands:
+        - 'give %name% DIAMOND name:&bKOTH Key'
         - 'give %name% DIAMOND_SWORD 1'
         - 'give %name% DIAMOND_HELMET 1'
         - 'give %name% DIAMOND_LEGGINGS 1'
