@@ -55,6 +55,10 @@ public class ScoreboardManager {
         scoreboards.put(scoreboard.getPlayer().getUniqueId(), scoreboard);
     }
 
+    public void removeScoreboard(Player player) {
+        scoreboards.remove(player.getUniqueId());
+    }
+
     public Scoreboard getScoreboard(Player player) { return scoreboards.get(player.getUniqueId()); }
 
     public Map<UUID, Scoreboard> getScoreboards() {

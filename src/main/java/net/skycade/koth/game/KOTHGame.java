@@ -1,5 +1,7 @@
 package net.skycade.koth.game;
 
+import com.massivecraft.factions.entity.FactionColl;
+import com.massivecraft.factions.entity.MPlayer;
 import net.skycade.koth.SkycadeKoth;
 import net.skycade.koth.events.phase.PhaseChangeEvent;
 import net.skycade.koth.events.zone.EnterCaptureZoneEvent;
@@ -17,7 +19,9 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -96,17 +100,20 @@ public class KOTHGame implements Listener {
                                     new Placeholder("%arenaname%", currentArena.getArenaName())
                             ));
 
-                            plugin.getScoreboardManager().addScoreboard(new Scoreboard(player, "Skycade KOTH",
+                            plugin.getScoreboardManager().addScoreboard(new Scoreboard(player, "&b&lSky&f&lcade &3&lKOTH",
                                     new String[] {
                                             "",
-                                            "&7Goodluck " + player.getName(),
+                                            "&7Goodluck &b" + player.getName(),
                                             " ",
-                                            ChatColor.GREEN.toString(),
-                                            ChatColor.RED.toString(),
+                                            ChatColor.GREEN.toString(), // Capturing identifier
+                                            ChatColor.DARK_PURPLE.toString(), // Capturing Faction identifier
                                             "  ",
+                                            ChatColor.RED.toString(), // Remaining time identifier
+                                            "   ",
                                     }));
 
                             plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturing", ChatColor.GREEN.toString(), "&7Capturing: ", "&aNONE");
+                            plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturingfac", ChatColor.DARK_PURPLE.toString(), "&7Faction: ", "&aNONE");
                             plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Time Left: ", "&aLoading..");
                         }
                     });
@@ -128,7 +135,11 @@ public class KOTHGame implements Listener {
                 int minutes = (intervals % 3600) / 60;
                 int seconds = intervals % 60;
 
-                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturing", ChatColor.GREEN.toString(), "&7Capturing: ", Bukkit.getPlayer(currentlyWithinBoundaries.peek()).getName());
+                Player capturing = Bukkit.getPlayer(currentlyWithinBoundaries.peek());
+                String faction = MPlayer.get(capturing.getUniqueId()).getFactionName();
+
+                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturing", ChatColor.GREEN.toString(), "&7Capturing: ", capturing.getName());
+                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturingfac", ChatColor.DARK_PURPLE.toString(), "&7Faction: ", "&a" + (faction.length() < 1 ? "NONE" : faction));
                 plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Time Left: ", "&c" + minutes + ":" + seconds);
             });
 
@@ -143,10 +154,13 @@ public class KOTHGame implements Listener {
             getActivePlayers().forEach(uuid -> {
                 Player player = Bukkit.getPlayer(uuid);
                 MessageUtil.sendMessageToPlayer(player, winner.getName() + " successfully captured the zone.. loot inbound..");
+                plugin.getScoreboardManager().getScoreboard(player).remove();
+                plugin.getScoreboardManager().removeScoreboard(player);
             });
 
             // TODO make a KOTH key..
             winner.getInventory().addItem(new ItemStack(Material.TRIPWIRE_HOOK));
+            plugin.getGameManager().endGame(this);
         });
     }
 
@@ -231,8 +245,6 @@ public class KOTHGame implements Listener {
 
         Player player = event.getPlayer();
 
-        player.sendMessage("Entered capture zone for " + event.getGame().getGameId());
-
         if (!currentlyWithinBoundaries.contains(player.getUniqueId())) {
 
             if (currentlyWithinBoundaries.peek() == null) {
@@ -246,9 +258,6 @@ public class KOTHGame implements Listener {
     @EventHandler
     public void onExitCapture(ExitCaptureZoneEvent event) {
         Player player = event.getPlayer();
-
-        player.sendMessage("Exited capture zone for " + event.getGame().getGameId());
-        player.sendMessage("Current peek: " + (currentlyWithinBoundaries.peek() == null ? "NONE" :  Bukkit.getPlayer(currentlyWithinBoundaries.peek()).getName()));
 
         if (currentlyWithinBoundaries.size() > 1 && currentlyWithinBoundaries.peek() != null && currentlyWithinBoundaries.peek().equals(player.getUniqueId())) {
             currentlyWithinBoundaries.poll();
@@ -269,6 +278,7 @@ public class KOTHGame implements Listener {
                 int seconds = currentCaptureTime % 60;
 
                 plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturing", ChatColor.GREEN.toString(), "&7Capturing: ", "&aNONE");
+                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturingfac", ChatColor.DARK_PURPLE.toString(), "&7Faction: ", "&aNONE");
                 plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Time Left: ", "&c" + minutes + ":" + seconds);
             });
         }
@@ -281,5 +291,12 @@ public class KOTHGame implements Listener {
         if (event.getNewPhase() == GamePhase.IN_PROGRESS) {
             // Decrease time over time (shorter as time goes on..)
         }
+    }
+
+    @EventHandler
+    public void onDisconnect(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        plugin.getScoreboardManager().getScoreboard(player).remove();
+        plugin.getScoreboardManager().removeScoreboard(player);
     }
 }

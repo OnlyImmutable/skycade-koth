@@ -2,3 +2,4 @@ name: SkycadeKoth
 main: net.skycade.koth.SkycadeKoth
 version: 1.0.0
 author: ThatAnstractWolf
+depend: [Factions]

@@ -65,6 +65,9 @@ public class ArenaManager {
 
             arenaCache.put(arenaName, new Arena(arenaName, spawnPoint, boundaryPoint1, boundaryPoint2));
             System.out.println("Cached a new arena.. " + arenaName);
+            System.out.println("Spawn point: " + spawnPoint.toVector());
+            System.out.println("Bound point 1: " + boundaryPoint1.toVector());
+            System.out.println("Bound point 2: " + boundaryPoint2.toVector());
         }
     }
 

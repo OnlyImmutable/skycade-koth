@@ -81,5 +81,22 @@
             <version>LATEST</version>
             <scope>compile</scope>
         </dependency>
+
+        <!-- Factions -->
+        <dependency>
+            <groupId>com.massivecraft</groupId>
+            <artifactId>factions</artifactId>
+            <version>2.14.0</version>
+            <systemPath>${basedir}/dependencies/Factions.jar</systemPath>
+            <scope>system</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.massivecraft</groupId>
+            <artifactId>massivecore</artifactId>
+            <version>2.14.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/dependencies/MassiveCore.jar</systemPath>
+        </dependency>
     </dependencies>
 </project>
