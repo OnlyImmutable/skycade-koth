@@ -6,11 +6,13 @@ arenas:
         zoneTimeShrinkDuration: 900
         # WorldName;x;y;z;pitch;yaw
         spawnLocation: 'ASkyBlock;0;125;28;90;5'
+        # Boundaries are the points around the zone, should be a square and once walked in or out events are called.
         boundaries:
             point1: 'ASkyBlock;-3;0;14;0;0'
             point2: 'ASkyBlock;-31;255;40;0;0'
         # Commands that are ran when the player wins.. %name% = players name placeholder.
         lootCommands:
+        - 'give %name% DIAMOND name:&bKOTH Key'
         - 'give %name% DIAMOND_SWORD 1'
         - 'give %name% DIAMOND_HELMET 1'
         - 'give %name% DIAMOND_LEGGINGS 1'
