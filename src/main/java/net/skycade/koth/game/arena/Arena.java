@@ -27,6 +27,9 @@ public class Arena {
     /** The duration the game will start at, for example 900 = 900 seconds = 15 minutes. */
     private int startingDuration;
 
+    /** The duration that the zone capture time will shrink, for example 900 = 900 seconds = 15 minutes.. */
+    private int shrinkDuration;
+
     /** Spawn point everyone is transported to. */
     private Location spawnLocation;
 
@@ -41,14 +44,16 @@ public class Arena {
      * Create a new instance of an Arena.
      * @param arenaName - arena name.
      * @param startingDuration - starting duration for the arena being played.
+     * @param shrinkDuration - duration that the zone capture time will shrink.
      * @param spawnLocation - spawn location for players.
      * @param arenaBoundaryPoint1 - boundary point 1 for the zone.
      * @param arenaBoundaryPoint2 - boundary point 2 for the zone.
      * @param lootCommands - list of commands executed when looting started.
      */
-    public Arena(String arenaName, int startingDuration, Location spawnLocation, Location arenaBoundaryPoint1, Location arenaBoundaryPoint2, List<String> lootCommands) {
+    public Arena(String arenaName, int startingDuration, int shrinkDuration, Location spawnLocation, Location arenaBoundaryPoint1, Location arenaBoundaryPoint2, List<String> lootCommands) {
         this.arenaName = arenaName;
         this.startingDuration = startingDuration;
+        this.shrinkDuration = shrinkDuration;
         this.spawnLocation = spawnLocation;
         this.arenaBoundaryPoint1 = arenaBoundaryPoint1;
         this.arenaBoundaryPoint2 = arenaBoundaryPoint2;
@@ -67,6 +72,13 @@ public class Arena {
      */
     public int getStartingDuration() {
         return startingDuration;
+    }
+
+    /**
+     * @return Get the duration the zone time shrinks.
+     */
+    public int getShrinkDuration() {
+        return shrinkDuration;
     }
 
     /**

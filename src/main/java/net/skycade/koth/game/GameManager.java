@@ -23,8 +23,10 @@ import java.util.*;
  **************************************************************************************************/
 public class GameManager {
 
+    /** {@link SkycadeKoth} plugin instance.*/
     private SkycadeKoth plugin;
 
+    /** Cache of active koth games. */
     private Map<String, KOTHGame> activeKOTHGames;
 
     public GameManager(SkycadeKoth plugin) {
@@ -60,10 +62,19 @@ public class GameManager {
         HandlerList.unregisterAll(game);
     }
 
+    /**
+     * Get an instance of {@link KOTHGame} by its unique ID.
+     * @param gameId - unique id.
+     * @return KOTHGame
+     */
     public KOTHGame getGameById(String gameId) {
         return activeKOTHGames.get(gameId);
     }
 
+    /**
+     * Get the cache of all active {@link KOTHGame}'s.
+     * @return KOTHGame cache.
+     */
     public Map<String, KOTHGame> getActiveKOTHGames() {
         return activeKOTHGames;
     }

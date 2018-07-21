@@ -17,18 +17,32 @@ package net.skycade.koth.utils.placeholder;
  **************************************************************************************************/
 public class Placeholder {
 
+    /** Placeholder that will be replaced. */
     private String placeholder;
+    /** Placeholder value which will be the value of a placeholder. */
     private Object value;
 
+    /**
+     * Crate a new {@link Placeholder} instance.
+     * @param placeholder - placeholder.
+     * @param value - placeholder value.
+     */
     public Placeholder(String placeholder, Object value) {
         this.placeholder = placeholder;
         this.value = value;
     }
 
+    /**
+     * @return Placeholder
+     */
     public String getPlaceholder() {
         return placeholder;
     }
 
+    /**
+     * Value for the placeholder.
+     * @return Placeholder value.
+     */
     public Object getValue() {
         return value;
     }

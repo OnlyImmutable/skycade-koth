@@ -50,21 +50,22 @@ public class ArenaManager {
 
         for (String arenaName : config.getConfigurationSection("arenas").getKeys(false)) {
             int startingDuration = config.getInt("arenas." + arenaName + ".startDuration");
+            int shrinkDuration = config.getInt("arenas." + arenaName + ".zoneTimeShrinkDuration");
             Location spawnPoint = LocationUtil.getLocationFromString(config.getString("arenas." + arenaName + ".spawnLocation"));
             Location boundaryPoint1 = LocationUtil.getLocationFromString(config.getString("arenas." + arenaName + ".boundaries.point1"));
             Location boundaryPoint2 = LocationUtil.getLocationFromString(config.getString("arenas." + arenaName + ".boundaries.point2"));
 
             List<String> lootCommands = config.getStringList("arenas." + arenaName + ".lootCommands");
 
-            arenaCache.put(arenaName, new Arena(arenaName, startingDuration, spawnPoint, boundaryPoint1, boundaryPoint2, lootCommands));
+            arenaCache.put(arenaName, new Arena(arenaName, startingDuration, shrinkDuration, spawnPoint, boundaryPoint1, boundaryPoint2, lootCommands));
             System.out.println("Cached a new arena.. " + arenaName);
         }
     }
 
     /**
      * Get an arena by its specific name.
-     * @param name
-     * @return
+     * @param name - arena name.
+     * @return Arena
      */
     public Arena getArenaByName(String name) {
         return arenaCache.get(name);

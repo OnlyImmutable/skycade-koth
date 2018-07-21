@@ -25,20 +25,37 @@ import java.util.List;
  **************************************************************************************************/
 public class MessageUtil {
 
+    /** {@link SkycadeKoth} plugin instance. */
     private static SkycadeKoth plugin;
 
     public MessageUtil(SkycadeKoth plugin) {
         MessageUtil.plugin = plugin;
     }
 
+    /**
+     * Send a normal message to a player.
+     * @param player - player.
+     * @param message - message.
+     */
     public static void sendMessageToPlayer(Player player, String message) {
         player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessageManager().getMessageFromCache("prefix") + " &7" + message));
     }
 
+    /**
+     * Send a message from the database that has been configured there.
+     * @param player - player.
+     * @param key - message key.
+     */
     public static void sendMessage(Player player, String key) {
         player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessageManager().getMessageFromCache("prefix")  + " " + plugin.getMessageManager().getMessageFromCache(key)));
     }
 
+    /**
+     * Send a message from the database that has been configured there. With custom placeholders.
+     * @param player - player.
+     * @param key - message key.
+     * @param placeholders - placeholders.
+     */
     public static void sendMessage(Player player, String key, List<Placeholder> placeholders) {
         player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessageManager().getMessageFromCache("prefix")  + " " + PlaceholderManager.replaceCustomPlaceholders(plugin.getMessageManager().getMessageFromCache(key), placeholders)));
     }

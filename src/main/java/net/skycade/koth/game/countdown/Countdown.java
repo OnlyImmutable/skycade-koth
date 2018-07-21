@@ -27,13 +27,18 @@ public class Countdown {
     /** ID for the countdown. */
     private String countdownId;
 
+    /** Current time the countdown is on. */
     private int currentTime;
 
+    /** Total duration of the countdown. */
     private int totalDuration;
+    /** Intervals of the countdown for messages etc.. */
     private int[] countdownPoints;
 
+    /** Should intervals be called every second rather than at points. */
     private boolean everySecond;
 
+    /** Runnable for the countdown. */
     private BukkitRunnable runnable;
 
     public Countdown(SkycadeKoth plugin, String countdownId, int totalDuration, int[] countdownPoints) {
@@ -53,6 +58,11 @@ public class Countdown {
         this.currentTime = totalDuration;
     }
 
+    /**
+     * Start the countdown.
+     * @param intervals - what should happen per interval call.
+     * @param finished - what should happen once the countdown finishes.
+     */
     public void start(Callback<Integer> intervals, Callback<Boolean> finished) {
 
         runnable = new BukkitRunnable() {
@@ -85,34 +95,58 @@ public class Countdown {
         runnable.runTaskTimer(plugin, 0L, 20L);
     }
 
+    /**
+     * Stop the countdown.
+     */
     public void stop() {
         runnable.cancel();
     }
 
+    /**
+     * @return Get the countdowns unique ID.
+     */
     public String getCountdownId() {
         return countdownId;
     }
 
+    /**
+     * @return Get the current time of the countdown.
+     */
     public int getCurrentTime() {
         return currentTime;
     }
 
+    /**
+     * @return Set the current time of the countdown.
+     */
     public void setCurrentTime(int currentTime) {
         this.currentTime = currentTime;
     }
 
+    /**
+     * @return Get the total duration of the countdown.
+     */
     public int getTotalDuration() {
         return totalDuration;
     }
 
+    /**
+     * @return Get the countdown points/intervals.
+     */
     public int[] getCountdownPoints() {
         return countdownPoints;
     }
 
+    /**
+     * @return Set the runnable.
+     */
     public void setRunnable(BukkitRunnable runnable) {
         this.runnable = runnable;
     }
 
+    /**
+     * @return Get the runnable.
+     */
     public BukkitRunnable getRunnable() {
         return runnable;
     }

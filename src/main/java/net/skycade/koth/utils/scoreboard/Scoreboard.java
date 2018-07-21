@@ -27,14 +27,25 @@ import java.util.Map;
  **************************************************************************************************/
 public class Scoreboard {
 
+    /** Player */
     private Player player;
 
+    /** {@link ScoreboardManager} instance. */
     private ScoreboardManager scoreboardManager;
+    /** {@link org.bukkit.scoreboard.Scoreboard} instance. */
     private org.bukkit.scoreboard.Scoreboard scoreboard;
 
+    /** Scoreboard objective. */
     private Objective objective;
+    /** Scoreboard lines. */
     private Map<Integer, String> scoreboardLines;
 
+    /**
+     * Create a new scoreboard instance.
+     * @param player - player.
+     * @param title - title.
+     * @param scoreboardLines - lines.
+     */
     public Scoreboard(Player player, String title, String[] scoreboardLines) {
 
         this.player = player;
@@ -55,10 +66,16 @@ public class Scoreboard {
         }
     }
 
+    /**
+     * Remove a scoreboard.
+     */
     public void remove() {
         player.setScoreboard(scoreboardManager.getNewScoreboard());
     }
 
+    /**
+     * Update a scoreboards lines.
+     */
     public void update() {
 
         scoreboardLines.forEach((lineId, line) -> {
@@ -69,6 +86,13 @@ public class Scoreboard {
         player.setScoreboard(scoreboard);
     }
 
+    /**
+     * Update a team on a scoreboard, this allows for non-flashing updating values.
+     * @param teamName - team name.
+     * @param entry - entry name.
+     * @param prefix - prefix.
+     * @param suffix - suffix.
+     */
     public void updateTeam(String teamName, String entry, String prefix, String suffix) {
         Team team = (scoreboard.getTeam(teamName) != null ? scoreboard.getTeam(teamName) : scoreboard.registerNewTeam(teamName));
 
@@ -80,14 +104,23 @@ public class Scoreboard {
         team.setSuffix(ChatColor.translateAlternateColorCodes('&', suffix));
     }
 
+    /**
+     * @return Scoreboard lines.
+     */
     public Map<Integer, String> getScoreboardLines() {
         return scoreboardLines;
     }
 
+    /**
+     * @return Scoreboard.
+     */
     public org.bukkit.scoreboard.Scoreboard getScoreboard() {
         return scoreboard;
     }
 
+    /**
+     * @return Player.
+     */
     public Player getPlayer() {
         return player;
     }

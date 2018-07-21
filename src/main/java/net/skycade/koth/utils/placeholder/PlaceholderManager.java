@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
  **************************************************************************************************/
 public class PlaceholderManager {
 
+    /** Cache of all placeholders. */
     private static List<Placeholder> placeholders;
 
     static {

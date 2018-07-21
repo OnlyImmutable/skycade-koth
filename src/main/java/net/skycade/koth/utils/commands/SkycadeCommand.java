@@ -29,18 +29,14 @@ import java.util.List;
  **************************************************************************************************/
 public abstract class SkycadeCommand extends BukkitCommand {
 
-    private SkycadeKoth plugin;
-
-    public SkycadeCommand(SkycadeKoth plugin, String name) {
+    public SkycadeCommand(String name) {
         super(name);
-        this.plugin = plugin;
 
         registerCommand();
     }
 
     public SkycadeCommand(SkycadeKoth plugin, String name, String description, String usageMessage, List<String> aliases) {
         super(name, description, usageMessage, aliases);
-        this.plugin = plugin;
 
         registerCommand();
     }
@@ -66,6 +62,9 @@ public abstract class SkycadeCommand extends BukkitCommand {
         return false;
     }
 
+    /**
+     * Register the command without the use of a plugin.yml
+     */
     private void registerCommand() {
 
         try {

@@ -20,11 +20,11 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 
@@ -65,6 +65,12 @@ public class KOTHGame implements Listener {
 
     /** Current duration for capturing at the current time. */
     private int currentCaptureTime;
+
+    /** Runnable to shrink the time to capture a zone. */
+    private BukkitRunnable captureTimeShrinkerRunnable;
+
+    /** How many times the capture time has shrunk. */
+    private int captureTimeRanAmount;
 
     /**
      * Create a new instance of {@link KOTHGame}
@@ -126,9 +132,47 @@ public class KOTHGame implements Listener {
                             int minutes = (currentCaptureTime % 3600) / 60;
                             int seconds = currentCaptureTime % 60;
 
-                            plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturing", ChatColor.GREEN.toString(), "&7Capturing: ", "&aNONE");
-                            plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturingfac", ChatColor.DARK_PURPLE.toString(), "&7Faction: ", "&aNONE");
-                            plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Time Left: ", "&c" + minutes + ":" + seconds);
+                            plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturing", ChatColor.GREEN.toString(), "&7Capturing: ", "&aNone");
+                            plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturingfac", ChatColor.DARK_PURPLE.toString(), "&7Faction: ", "&aNone");
+                            plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Time Left: ", "&c" + minutes + ":" + String.format("%02d", seconds));
+
+                            captureTimeShrinkerRunnable = new BukkitRunnable() {
+
+                                @Override
+                                public void run() {
+
+                                    // Shrink the capture time..
+                                    switch (captureTimeRanAmount) {
+                                        case 2: // decrease from X by 5 so 15 = 10 etc
+                                            currentCaptureTime = (((currentCaptureTime / 60) - 5) * 60);
+                                            break;
+                                        case 3: // decrease from X by 4 so 10 = 6 etc.
+                                            currentCaptureTime = (((currentCaptureTime / 60) - 4) * 60);
+                                            break;
+                                        case 4: // decrease from X by 3 so 6 = 3 etc.
+                                            currentCaptureTime = (((currentCaptureTime / 60) - 3) * 60);
+                                            break;
+                                        default:
+                                            break;
+                                    }
+
+                                    if (captureTimeRanAmount > 1) {
+
+                                        int minutes = (currentCaptureTime % 3600) / 60;
+
+                                        getActivePlayers().forEach(uuid -> {
+                                            Player player = Bukkit.getPlayer(uuid);
+                                            MessageUtil.sendMessage(player, "capturetimedecrease", Collections.singletonList(
+                                                    new Placeholder("%minutes%", minutes)
+                                            ));
+                                        });
+                                    }
+
+                                    captureTimeRanAmount += 1;
+                                }
+                            };
+
+                            captureTimeShrinkerRunnable.runTaskTimer(plugin, 0L, getCurrentArena().getShrinkDuration()* 20);
                         }
                     });
                 }
@@ -156,8 +200,8 @@ public class KOTHGame implements Listener {
                 String faction = MPlayer.get(capturing.getUniqueId()).getFactionName();
 
                 plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturing", ChatColor.GREEN.toString(), "&7Capturing: ", capturing.getName());
-                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturingfac", ChatColor.DARK_PURPLE.toString(), "&7Faction: ", "&a" + (faction.length() < 1 ? "NONE" : faction));
-                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Time Left: ", "&c" + minutes + ":" + seconds);
+                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturingfac", ChatColor.DARK_PURPLE.toString(), "&7Faction: ", "&a" + (faction.length() < 1 ? "None" : faction));
+                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Time Left: ", "&c" + minutes + ":" + String.format("%02d", seconds));
             });
 
             if (intervals > 60 && intervals % 60 == 0) {
@@ -188,7 +232,7 @@ public class KOTHGame implements Listener {
             });
 
             getCurrentArena().getLootCommands().forEach(command -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), PlaceholderManager.replaceCustomPlaceholder(command, "%name%", winner.getName())));
-
+            captureTimeShrinkerRunnable.cancel();
             plugin.getGameManager().endGame(this);
         });
     }
@@ -335,24 +379,10 @@ public class KOTHGame implements Listener {
                 int minutes = (currentCaptureTime % 3600) / 60;
                 int seconds = currentCaptureTime % 60;
 
-                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturing", ChatColor.GREEN.toString(), "&7Capturing: ", "&aNONE");
-                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturingfac", ChatColor.DARK_PURPLE.toString(), "&7Faction: ", "&aNONE");
-                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Time Left: ", "&c" + minutes + ":" + seconds);
+                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturing", ChatColor.GREEN.toString(), "&7Capturing: ", "&aNone");
+                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturingfac", ChatColor.DARK_PURPLE.toString(), "&7Faction: ", "&aNone");
+                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Time Left: ", "&c" + minutes + ":" + String.format("%02d", seconds));
             });
-        }
-    }
-
-    /**
-     * Handles the changing of phases.
-     * @param event - event
-     */
-    @EventHandler
-    public void onPhaseChange(PhaseChangeEvent event) {
-
-        switch (event.getNewPhase()) {
-            case IN_PROGRESS:
-                // Decrease time over time (shorter as time goes on..)
-                break;
         }
     }
 
@@ -398,10 +428,57 @@ public class KOTHGame implements Listener {
         // Stops checking for players not in this game..
         if (!getActivePlayers().contains(player.getUniqueId())) return;
 
+        removeActivePlayer(player);
+
         if (getCurrentPhase() != GamePhase.IN_PROGRESS) return;
 
         if (LocationUtil.isWithinLocation(player.getLocation(), getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2())) {
             Bukkit.getPluginManager().callEvent(new ExitCaptureZoneEvent(player, this));
+        }
+
+        if (!getActivePlayers().contains(player.getUniqueId())) {
+
+            plugin.getScoreboardManager().getScoreboard(player).remove();
+            plugin.getScoreboardManager().removeScoreboard(player);
+
+            player.teleport(Bukkit.getWorld("world").getSpawnLocation());
+        }
+
+        handleEndCheck();
+    }
+
+    /**
+     * Handle the respawn of a player during a {@link KOTHGame}
+     * @param event - event
+     */
+    @EventHandler
+    public void onRespawn(PlayerRespawnEvent event) {
+        Player player = event.getPlayer();
+
+        // Stops checking for players not in this game..
+        if (!getActivePlayers().contains(player.getUniqueId())) return;
+
+        if (getCurrentPhase() != GamePhase.IN_PROGRESS) return;
+
+        event.setRespawnLocation(getCurrentArena().getSpawnLocation());
+    }
+
+    /**
+     * Handle the damage of a player during a {@link KOTHGame}
+     * @param event - event
+     */
+    @EventHandler
+    public void onDamage(EntityDamageByEntityEvent event) {
+
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
+
+            // Stops checking for players not in this game..
+            if (!getActivePlayers().contains(player.getUniqueId())) return;
+
+            if (getCurrentPhase() != GamePhase.IN_PROGRESS) {
+                event.setCancelled(true);
+            }
         }
     }
 
@@ -425,6 +502,34 @@ public class KOTHGame implements Listener {
             Bukkit.getPluginManager().callEvent(new ExitCaptureZoneEvent(player, this));
         } else if (!LocationUtil.isWithinLocation(from, getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2()) && LocationUtil.isWithinLocation(to, getCurrentArena().getArenaBoundaryPoint1(), getCurrentArena().getArenaBoundaryPoint2())) {
             Bukkit.getPluginManager().callEvent(new EnterCaptureZoneEvent(player, this));
+        }
+    }
+
+    /**
+     * Handles the check for if a player leaves the game.
+     * Made into a method due to code being used more than once.
+     * Checks if the active players <= 1 due to no players playing.
+     */
+    public void handleEndCheck() {
+
+        if (getActivePlayers().size() <= 1) {
+
+            setCurrentPhase(GamePhase.FINISHED);
+
+            Bukkit.getOnlinePlayers().forEach(activePlayer -> {
+                if (getActivePlayers().contains(activePlayer.getUniqueId())) {
+                    if (plugin.getScoreboardManager().getScoreboard(activePlayer) != null) {
+                        plugin.getScoreboardManager().getScoreboard(activePlayer).remove();
+                        plugin.getScoreboardManager().removeScoreboard(activePlayer);
+                    }
+
+                    activePlayer.teleport(Bukkit.getWorld("world").getSpawnLocation());
+                }
+                MessageUtil.sendMessageToPlayer(activePlayer, "There were not enough players to continue the game of KOTH.");
+            });
+
+            captureTimeShrinkerRunnable.cancel();
+            plugin.getGameManager().endGame(this);
         }
     }
 }

@@ -25,14 +25,16 @@ import java.util.Map;
  **************************************************************************************************/
 public class MessageManager {
 
+    /** {@link SkycadeKoth} plugin instance. */
     private SkycadeKoth plugin;
+
+    /** Cache of all messages. */
     private Map<String, String> cachedMessages;
 
     public MessageManager(SkycadeKoth plugin) {
         this.plugin = plugin;
         cachedMessages = new HashMap<>();
 
-        // TODO load from database.
         plugin.getDatabase().sendPreparedStatement("CREATE TABLE IF NOT EXISTS messages (\n" +
                 "    messageKey VARCHAR(40) NOT NULL,\n" +
                 "    messageValue LONGTEXT NOT NULL,\n" +
@@ -42,6 +44,11 @@ public class MessageManager {
         loadDatabaseMessages();
     }
 
+    /**
+     * Get a specific message by its key from the cache.
+     * @param key - message key.
+     * @return message.
+     */
     protected String getMessageFromCache(String key) {
 
         if (!cachedMessages.containsKey(key)) {
@@ -53,10 +60,17 @@ public class MessageManager {
         return cachedMessages.get(key);
     }
 
+    /**
+     * Get the message cache.
+     * @return cache of all messages.
+     */
     public Map<String, String> getCachedMessages() {
         return cachedMessages;
     }
 
+    /**
+     * Load the messages from the database async.
+     */
     private void loadDatabaseMessages() {
 
         cachedMessages.clear();

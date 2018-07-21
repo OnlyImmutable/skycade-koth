@@ -27,8 +27,10 @@ import java.util.UUID;
  **************************************************************************************************/
 public class ScoreboardManager {
 
+    /** Cache of players with a scoreboard. */
     private Map<UUID, Scoreboard> scoreboards;
 
+    /** Scoreboard update runnable. */
     private BukkitRunnable updateRunnable;
 
     public ScoreboardManager(SkycadeKoth plugin) {
@@ -47,6 +49,10 @@ public class ScoreboardManager {
         updateRunnable.runTaskTimerAsynchronously(plugin, 0L, 20L);
     }
 
+    /**
+     * Add a scoreboard to a player.
+     * @param scoreboard - Scoreboard.
+     */
     public void addScoreboard(Scoreboard scoreboard) {
         if (scoreboards.containsKey(scoreboard.getPlayer().getUniqueId())) {
             return;
@@ -55,12 +61,24 @@ public class ScoreboardManager {
         scoreboards.put(scoreboard.getPlayer().getUniqueId(), scoreboard);
     }
 
+    /**
+     * Remove a players scoreboard from the cache.
+     * @param player - player.
+     */
     public void removeScoreboard(Player player) {
         scoreboards.remove(player.getUniqueId());
     }
 
+    /**
+     * Get a scoreboard from a player.
+     * @param player - player.
+     * @return Scoreboard
+     */
     public Scoreboard getScoreboard(Player player) { return scoreboards.get(player.getUniqueId()); }
 
+    /**
+     * @return Scoreboard cache.
+     */
     public Map<UUID, Scoreboard> getScoreboards() {
         return scoreboards;
     }

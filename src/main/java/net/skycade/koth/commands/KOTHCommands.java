@@ -1,6 +1,7 @@
 package net.skycade.koth.commands;
 
 import net.skycade.koth.SkycadeKoth;
+import net.skycade.koth.game.GamePhase;
 import net.skycade.koth.game.KOTHGame;
 import net.skycade.koth.game.arena.Arena;
 import net.skycade.koth.utils.commands.SkycadeCommand;
@@ -35,7 +36,7 @@ public class KOTHCommands extends SkycadeCommand {
     private SkycadeKoth plugin;
 
     public KOTHCommands(SkycadeKoth plugin) {
-        super(plugin, "koth");
+        super("koth");
         this.plugin = plugin;
     }
 
@@ -56,6 +57,12 @@ public class KOTHCommands extends SkycadeCommand {
             switch (args[0].toLowerCase()) {
 
                 case "start":
+
+                    if (sender instanceof Player && !sender.hasPermission("koth.start")) {
+                        MessageUtil.sendMessage((Player) sender, "noPermission");
+                        return;
+                    }
+
                     String createGameName = args[1];
                     String arenaName = args[2];
 
@@ -86,29 +93,6 @@ public class KOTHCommands extends SkycadeCommand {
                     plugin.getGameManager().startGame(sender.getName(), new KOTHGame(plugin, createGameName, arena));
                     break;
 
-                case "join":
-
-                    if (!(sender instanceof Player)) {
-                        sender.sendMessage(ChatColor.RED + "Console cannot join a game.. please execute the same command from a player instance.");
-                        return;
-                    }
-
-                    Player player = (Player) sender;
-
-                    String joinGameName = args[1];
-                    KOTHGame joinGame = plugin.getGameManager().getGameById(joinGameName);
-
-                    if (joinGame == null) {
-                        sender.sendMessage(ChatColor.RED + joinGameName + " is not an active game, try /koth listgames to find one!");
-                        return;
-                    }
-
-                    joinGame.addActivePlayer(player);
-                    MessageUtil.sendMessage(player, "joingame",
-                            Arrays.asList(
-                                    new Placeholder("%gamename%", joinGameName),
-                                    new Placeholder("%arenaname%", joinGame.getCurrentArena().getArenaName())));
-                    break;
             }
         } else if (args.length == 2) {
 
@@ -131,6 +115,25 @@ public class KOTHCommands extends SkycadeCommand {
                         return;
                     }
 
+                    if (joinGame.getCurrentPhase() != GamePhase.WAITING && joinGame.getCurrentPhase() != GamePhase.COUNTDOWN) {
+                        sender.sendMessage(ChatColor.RED + joinGameName + " has already started.. please wait for the next game.");
+                        return;
+                    }
+
+                    boolean alreadyInGame = false;
+
+                    for (KOTHGame game : plugin.getGameManager().getActiveKOTHGames().values()) {
+                        if (game.getActivePlayers().contains(player.getUniqueId())) {
+                            alreadyInGame = true;
+                            break;
+                        }
+                    }
+
+                    if (alreadyInGame) {
+                        MessageUtil.sendMessage(player, "alreadyingame");
+                        return;
+                    }
+
                     joinGame.addActivePlayer(player);
                     MessageUtil.sendMessage(player, "joingame",
                             Arrays.asList(
@@ -143,15 +146,19 @@ public class KOTHCommands extends SkycadeCommand {
             switch (args[0].toLowerCase()) {
 
                 case "listarenas":
+                    sender.sendMessage(ChatColor.LIGHT_PURPLE + "Possible Maps:");
                     for (Arena arena : plugin.getArenaManager().getArenaCache().values()) {
                         sender.sendMessage(ChatColor.BLUE + arena.getArenaName());
                     }
                     break;
+
                 case "listgames":
+                    sender.sendMessage(ChatColor.LIGHT_PURPLE + "Possible games:");
                     for (KOTHGame game : plugin.getGameManager().getActiveKOTHGames().values()) {
                         sender.sendMessage(ChatColor.BLUE + game.getGameId());
                     }
                     break;
+
                 case "leave":
 
                     boolean successfullyLeft = false;
@@ -165,7 +172,15 @@ public class KOTHCommands extends SkycadeCommand {
 
                     for (KOTHGame game : plugin.getGameManager().getActiveKOTHGames().values()) {
                         if (game.getActivePlayers().contains(player.getUniqueId())) {
+
+                            if (plugin.getScoreboardManager().getScoreboard(player) != null) {
+                                plugin.getScoreboardManager().getScoreboard(player).remove();
+                                plugin.getScoreboardManager().removeScoreboard(player);
+                            }
+
                             game.removeActivePlayer(player);
+                            game.handleEndCheck();
+                            player.teleport(Bukkit.getWorld("world").getSpawnLocation());
                             MessageUtil.sendMessage(player, "leavegame", Collections.singletonList(new Placeholder("%gamename%", game.getGameId())));
                             successfullyLeft = true;
                         }

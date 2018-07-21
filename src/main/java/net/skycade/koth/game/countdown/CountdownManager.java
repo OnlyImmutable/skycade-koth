@@ -23,12 +23,19 @@ import java.util.Map;
  **************************************************************************************************/
 public class CountdownManager {
 
+    /** Cache of countdowns. */
     private Map<String, Countdown> currentCountdowns;
 
     public CountdownManager() {
         this.currentCountdowns = new HashMap<>();
     }
 
+    /**
+     * Start a countdown.
+     * @param countdown - countdown instance.
+     * @param intervals - what should happen per interval call.
+     * @param finished - what should happen once the countdown finishes.
+     */
     public void startCountdown(Countdown countdown, Callback<Integer> intervals, Callback<Boolean> finished) {
         if (currentCountdowns.containsKey(countdown.getCountdownId())) {
             return;
@@ -38,10 +45,19 @@ public class CountdownManager {
         currentCountdowns.put(countdown.getCountdownId(), countdown);
     }
 
+    /**
+     * Remove a countdown.
+     * @param countdownId - unique countdown id.
+     */
     public void removeCountdown(String countdownId) {
         currentCountdowns.remove(countdownId);
     }
 
+    /**
+     * Get a countdowns instance.
+     * @param countdownId - countdown id.
+     * @return Countdown
+     */
     public Countdown getCountdown(String countdownId) {
         return currentCountdowns.get(countdownId);
     }
