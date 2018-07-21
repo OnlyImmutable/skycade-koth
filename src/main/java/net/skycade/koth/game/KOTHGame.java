@@ -126,6 +126,7 @@ public class KOTHGame implements Listener {
                                             ChatColor.DARK_PURPLE.toString(), // Capturing Faction identifier
                                             "  ",
                                             ChatColor.RED.toString(), // Remaining time identifier
+                                            ChatColor.GRAY.toString(), // Automatic Shutdown identifier
                                             "   ",
                                     }));
 
@@ -134,7 +135,7 @@ public class KOTHGame implements Listener {
 
                             plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturing", ChatColor.GREEN.toString(), "&7Capturing: ", "&aNone");
                             plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturingfac", ChatColor.DARK_PURPLE.toString(), "&7Faction: ", "&aNone");
-                            plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Time Left: ", "&c" + minutes + ":" + String.format("%02d", seconds));
+                            plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Capturing: ", "&c" + minutes + ":" + String.format("%02d", seconds));
 
                             captureTimeShrinkerRunnable = new BukkitRunnable() {
 
@@ -175,6 +176,33 @@ public class KOTHGame implements Listener {
                             captureTimeShrinkerRunnable.runTaskTimer(plugin, 0L, getCurrentArena().getShrinkDuration()* 20);
                         }
                     });
+
+                    // Will reset the game after 60 minutes and end it automatically.
+                    plugin.getCountdownManager().startCountdown(new Countdown(plugin, "automaticend", (60 * 60), true), intervals -> {
+
+                        int minutes = (intervals % 3600) / 60;
+                        int seconds = intervals % 60;
+
+                        getActivePlayers().forEach(active -> plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(active)).updateTeam("autoend", ChatColor.GRAY.toString(), "&7Auto End: ", "&b" + minutes + ":" + String.format("%02d", seconds)));
+                    }, autoFinish -> {
+                        
+                        // Automatically stops the game due to the time running out..
+                        setCurrentPhase(GamePhase.FINISHED);
+
+                        getActivePlayers().forEach(activePlayer -> {
+                            Player player = Bukkit.getPlayer(activePlayer);
+                            if (plugin.getScoreboardManager().getScoreboard(player) != null) {
+                                plugin.getScoreboardManager().getScoreboard(player).remove();
+                                plugin.getScoreboardManager().removeScoreboard(player);
+                            }
+
+                            player.teleport(Bukkit.getWorld("world").getSpawnLocation());
+                            MessageUtil.sendMessageToPlayer(player, "The time ran out.. no one won the game.");
+                        });
+
+                        captureTimeShrinkerRunnable.cancel();
+                        plugin.getGameManager().endGame(this);
+                    });
                 }
         );
     }
@@ -201,7 +229,7 @@ public class KOTHGame implements Listener {
 
                 plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturing", ChatColor.GREEN.toString(), "&7Capturing: ", capturing.getName());
                 plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturingfac", ChatColor.DARK_PURPLE.toString(), "&7Faction: ", "&a" + (faction.length() < 1 ? "None" : faction));
-                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Time Left: ", "&c" + minutes + ":" + String.format("%02d", seconds));
+                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Capturing: ", "&c" + minutes + ":" + String.format("%02d", seconds));
             });
 
             if (intervals > 60 && intervals % 60 == 0) {
@@ -381,7 +409,7 @@ public class KOTHGame implements Listener {
 
                 plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturing", ChatColor.GREEN.toString(), "&7Capturing: ", "&aNone");
                 plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("capturingfac", ChatColor.DARK_PURPLE.toString(), "&7Faction: ", "&aNone");
-                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Time Left: ", "&c" + minutes + ":" + String.format("%02d", seconds));
+                plugin.getScoreboardManager().getScoreboard(Bukkit.getPlayer(uuid)).updateTeam("remainingtime", ChatColor.RED.toString(), "&7Capturing: ", "&c" + minutes + ":" + String.format("%02d", seconds));
             });
         }
     }
